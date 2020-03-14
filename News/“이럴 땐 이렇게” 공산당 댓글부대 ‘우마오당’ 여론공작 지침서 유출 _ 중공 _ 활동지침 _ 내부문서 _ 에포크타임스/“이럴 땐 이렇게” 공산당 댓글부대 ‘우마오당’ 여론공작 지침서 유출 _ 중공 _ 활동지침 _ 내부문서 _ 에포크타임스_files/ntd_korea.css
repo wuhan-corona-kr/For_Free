@@ -1,0 +1,114 @@
+/*body.ntd_korea {*/
+/*font-family: AppleMyungjo, "Malgun Gothic", Roboto, "Nanum Gothic";*/
+/*}*/
+body.shenyun {
+	font-family: "Noto Sans CJK KR", Arial, Helvetica, 'Microsoft YaHei', STHeiti, SimSun, sans-serif;
+}
+@media screen and (max-device-width: 768px) {
+	body.ntd_korea.shenyun header .logo a:last-child {
+		padding-left: 30px;
+	}
+}
+body.ntd_korea.shenyun header .logo img {
+	width: 200px;
+	margin: 3px 0 0 0;
+	padding: 0;
+
+}
+
+body.shenyun header .site_logo {
+	background-image: url(/assets/themes/ntd/images/shenyun/ntdLogo.png);
+	background-size: 96px 50px;
+	width: 96px;
+	height: 50px;
+	display: block;
+}
+body.ntd_korea .sy-front .cover-image {
+	background-image: url(/assets/themes/ntd/images/shenyun/kr-front-bg-v5.jpg)
+}
+body.ntd_korea .sy-front .enter a {
+	line-height: 32px;
+}
+body.ntd_korea .shenyun-main h1 {
+	line-height: 30px;
+	padding-top: 12px;
+}
+body.ntd_korea .company-nav .companies a {
+	padding: 20px 0 0;
+	margin: 0 1.6%;
+	font-size: 17px;
+	color: #ffe4a7;
+	font-family: "Noto Sans CJK KR"; !important;
+	border-bottom: 0px solid #fbeccd;
+}
+body.ntd_korea .sy-front .center-wrap>a {
+	font-size: 17px;
+}
+
+body.ntd_korea.shenyun #footer .copyright {
+	width: 58%;
+	margin: auto;
+}
+
+@media screen and (max-device-width: 768px) {
+	body.ntd_korea .sy-front .cover-image {
+		background-image: url(/assets/themes/ntd/images/shenyun/kr-front-bg-v3.jpg) !important;
+	}
+	body.ntd_korea .sy-front .center-wrap>a {
+		font-size: 35px;
+	}
+	body.ntd_korea.shenyun #footer .copyright {
+		font-size: 17px;
+		line-height: 22px;
+	}
+}
+
+.lead_story .lead_title .title {
+	text-align: left;
+}
+
+.lead_story .excerpt {
+	text-align: left;
+}
+
+.slice_block_title a {
+	Font-size:30px;
+	line-height: 34px;
+	font-style: normal;
+}
+
+.block_title a {
+	font-size:19px;
+}
+
+.posts-list a {
+	font-size: 20px;
+	line-height: 24px;
+	max-height: 48px;
+}
+
+.block-title {
+	font-size: 16px;
+	height: 36px;
+}
+
+.sidebar .area-list a {
+	color: #333333;
+	font-size: 18px;
+	font-family: "Noto Sans CJK KR"; !important;
+	text-decoration: none;
+}
+.sidebar .more a {
+	font-size: 16px;
+}
+
+.art-body .title h1 {
+	font-family: 'Noto Serif KR', serif; !important;
+	border-top: 1px solid #4f4f4f;
+	border-bottom: 1px solid #b9b9b9;
+	padding-top: 15px;
+	padding-bottom: 12px;
+	font-weight: 600;
+	font-size: 28px;
+	margin-bottom: 12px;
+}

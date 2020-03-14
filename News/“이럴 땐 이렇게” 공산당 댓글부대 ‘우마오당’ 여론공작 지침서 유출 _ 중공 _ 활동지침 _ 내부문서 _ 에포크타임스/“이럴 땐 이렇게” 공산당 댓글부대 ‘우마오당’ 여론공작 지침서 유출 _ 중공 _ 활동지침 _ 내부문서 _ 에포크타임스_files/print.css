@@ -1,0 +1,46 @@
+/* Print Style Sheet */
+@media print {
+	#header .container .left {display: none;}
+	#header .container .icon_wrapper {display: none;}
+	#header .container .logo {float: none; display: block; margin: auto;}
+	#header .center_container {display: none;}
+	#top_ad_728x90 {display: none;}
+	div[id^='RTK'] {display: none;}
+	.main_content {border: none;display: block;margin-top: 0;padding-top: 0;}
+	.main_content .left_col .post_content > p:last-of-type {
+		margin-bottom: 0;
+	}
+	.main_content .left_col {display: block;width: 100%;border-right: none;padding:0;}
+	.main_content .upper_row {padding-left: 15px;}
+	.main_content .left_col .featured_image {border-top: 1px dotted #acacac; padding-top: 10px;}
+	.date_font .right_float {display: none;}
+	.video_fit_container {display: none;}
+	.main_content .post_content {padding-bottom: 0; padding-left: 0; padding-right: 0;}
+	div[id^='inside_ad'] {display: none;}
+	div.sub_2cols {display: none;}
+	div.newsletter_widget {display: none;}
+	#below_the_article {display: none;}
+	.social_email, .social_email * {display: none !important;padding: 0 !important;}
+	.recom_title, .recom_title * {display: none;}
+	.lower_row, .lower_row * {display: none;}
+	.right_col, .right_col * {display: none;}
+	.more_content {display: none;}
+	#footer {display: none;}
+	figure {width: auto !important;}
+	/* Shen Yun review posts */
+	#header .sy_bg_banner {height: 50px;}
+	#header .short_bar .right_part {display: none;}
+	.main_content .title_part .nav_bar {margin-top: 20px;}
+	.main_content .title_part .nav_bar .right_part {display: none;}
+	.main_content .title_part .social {display: none;}
+	.main_content .content_part .left_part {display: block;width: 100%;float: none;}
+	.main_content .content_part .left_part .featured_image {text-align: center;}
+	.main_content .content_part .left_part .featured_image .video_fit_container {display: block; padding-top: 0; margin-bottom: -57px;}
+	.main_content .content_part .top_content .post_content * {width: 100%;}
+	.main_content .content_part .right_part {display: none;}
+	.main_content .content_part .bottom_list {display: none;}
+	.main_content .upper_row {display: block;}
+	.main_content .post_content iframe {display: none;}
+	.main_contetn .post_content p {page-break-inside: avoid;}
+	img {page-break-inside: avoid;}
+}

@@ -1,0 +1,54 @@
+.jw-skin-epoch .jw-playlist-container .jw-label .jw-icon-play,.jw-skin-epoch .jw-playlist-container .jw-option:hover .jw-label{color:#ab0101}.jw-icon-rewind,.jwplayer.jw-flag-ads.jw-flag-small-player .jw-display-icon-display,.jwplayer.jw-flag-ads.jw-flag-small-player .jw-display-icon-next,.jwplayer.jw-flag-ads.jw-flag-small-player .jw-display-icon-rewind{visibility:hidden!important}.jw-skin-epoch .jw-controlbar-right-group .jw-icon-inline:before,.jw-skin-epoch .jw-controlbar-right-group .jw-icon-tooltip:before,.jw-skin-epoch .jw-icon-prev:before{border-left:1px solid #666}.jw-icon{font-family:jw-icons;-webkit-font-smoothing:antialiased;font-style:normal;font-weight:400;text-transform:none;background-color:transparent;font-variant:normal;-webkit-font-feature-settings:"liga";-moz-font-feature-settings:"liga=1";-moz-font-feature-settings:"liga";-ms-font-feature-settings:"liga" 1;-o-font-feature-settings:"liga";font-feature-settings:"liga";-moz-osx-font-smoothing:grayscale}.jw-skin-epoch .jw-background-color,.jw-skin-epoch .jw-controlbar .jw-background-color{background:rgba(0,0,0,.8)}.jw-skin-epoch .jw-group{vertical-align:middle}.jw-skin-epoch .jw-playlist{background-color:rgba(0,0,0,.8)}.jw-skin-epoch .jw-playlist-container{left:-43%;background-color:rgba(0,0,0,.8)}.jw-skin-epoch .jw-playlist-container .jw-option{border-bottom:1px solid #444}.jw-skin-epoch .jw-playlist-container .jw-option.jw-active-option,.jw-skin-epoch .jw-playlist-container .jw-option:hover{background-color:#000}.jw-skin-epoch .jw-playlist-container .jw-icon-playlist{margin-left:0}.jw-skin-epoch .jw-playlist-container .jw-label .jw-icon-play:before{padding-left:0}.jw-skin-epoch .jw-tooltip-title{background-color:#000;color:#fff}.jw-skin-epoch .jw-button-color,.jw-skin-epoch .jw-text{color:#fff}.jw-skin-epoch .jw-button-color:hover{color:#ab0101}.jw-skin-epoch .jw-toggle{color:#fff}.jw-skin-epoch .jw-toggle.jw-off{color:#C1C1C1}.jw-skin-epoch .jw-controlbar .jw-icon:before,.jw-skin-epoch .jw-text-duration,.jw-skin-epoch .jw-text-elapsed{padding:0 .7em}.jw-skin-epoch .jw-controlbar .jw-icon-prev:before{padding-right:.25em}.jw-skin-epoch .jw-controlbar .jw-icon-playlist:before{padding:0 .45em}.jw-skin-epoch .jw-controlbar .jw-icon-next:before{padding-left:.25em}.jw-skin-epoch .jw-icon-next,.jw-skin-epoch .jw-icon-prev{font-size:.7em}.jw-skin-epoch .jw-icon-next:before{border-right:1px solid #666}.jw-skin-epoch .jw-icon-display{color:#fff}.jw-skin-epoch .jw-icon-display:before{padding-left:0;color:#fff}.jw-skin-epoch .jw-display-icon-container.jw-display-icon-display{border-radius:50%;background:#000;opacity:.85;border:1.5px solid #fff;}.jw-display-icon-container.jw-display-icon-display:hover,.jw-skin-epoch .jwplayer:not(.jw-flag-touch):not(.jw-error):not(.jw-state-error):not(.jw-state-buffering) .jw-display-icon-container.jw-display-icon-display,.jwplayer:not(.jw-flag-touch):not(.jw-error):not(.jw-state-error):not(.jw-state-buffering) .jw-media:hover~.jw-controls .jw-display-icon-display{background:#4388ef;opacity:1}.jw-skin-epoch .jw-controlbar-center-group{padding:.3em!important}.jw-skin-epoch .jw-rail{background-color:#384154;box-shadow:none}.jw-skin-epoch .jw-buffer{background-color:#C1C1C1}.jw-skin-epoch .jw-progress{background:#ab0101}.jw-flag-time-slider-above:not(.jw-flag-ads-googleima).jwplayer .jw-group>.jw-icon,.jw-flag-time-slider-above:not(.jw-flag-ads-googleima).jwplayer .jw-group>.jw-text{height:2.5em!important;line-height:2.25em!important}.jw-flag-time-slider-above:not(.jw-flag-ads-googleima).jwplayer:not(.jw-flag-ads) .jw-controlbar,.jw-flag-time-slider-above:not(.jw-flag-ads-googleima).jwplayer:not(.jw-flag-live) .jw-controlbar{height:1.8em!important;padding:.8em 0 0!important}.jw-flag-time-slider-above:not(.jw-flag-ads-googleima).jwplayer .jw-group>.jw-icon{font-size:.95em!important}.jw-skin-epoch .jw-knob{background-image:linear-gradient(117deg,#ffe400,#cf5900)!important;border-radius:1em}.jw-skin-epoch .jw-slider-horizontal .jw-slider-container{height:.75em!important}.jw-skin-epoch .jw-slider-horizontal .jw-buffer,.jw-skin-epoch .jw-slider-horizontal .jw-progress,.jw-skin-epoch .jw-slider-horizontal .jw-rail{height:.255em!important;border-radius:0}.jw-skin-epoch .jw-slider-horizontal .jw-cue{top:-.04999999999999999em;width:.3em;height:.3em;background-color:#fff;border-radius:50%}.jw-skin-epoch .jw-slider-vertical .jw-buffer,.jw-skin-epoch .jw-slider-vertical .jw-progress,.jw-skin-epoch .jw-slider-vertical .jw-rail{width:.2em}.jw-skin-epoch .jw-volume-tip{width:100%;left:-45%;padding-bottom:.7em}.jw-skin-epoch .jw-text-duration{color:#666f82}.jw-skin-epoch .jw-controlbar-right-group .jw-icon-inline:first-child:before{border:0}.jw-skin-epoch .jw-dock .jw-dock-button{border-radius:50%}.jw-skin-epoch .jw-sharing-dock-btn{background-color:rgba(0,0,0,.2)!important}.jw-skin-epoch .jw-sharing-dock-btn:hover{background-color:rgba(0,0,0,.8)!important}.jw-skin-epoch .jw-sharing-dock-btn .jw-icon{background-image:url(../images/icon_share.svg)!important}.jw-skin-epoch .jw-dock .jw-overlay{border-radius:2.5em}.jw-skin-epoch .jw-icon-tooltip .jw-active-option{background-color:#ab0101;color:#fff}.jw-skin-epoch .jw-icon-volume{min-width:2.6em}.jw-skin-epoch .jw-menu,.jw-skin-epoch .jw-skip,.jw-skin-epoch .jw-time-tip,.jw-skin-epoch .jw-volume-tip{border:1px solid #333}.jw-skin-epoch .jw-time-tip{padding:.2em;bottom:1.3em}.jw-skin-epoch .jw-menu,.jw-skin-epoch .jw-volume-tip{bottom:.24em}.jw-skin-epoch .jw-skip{padding:.4em;border-radius:1.75em}.jw-skin-epoch .jw-skip .jw-icon-inline,.jw-skin-epoch .jw-skip .jw-text{color:#fff;line-height:1.75em}.jw-skin-epoch .jw-skip.jw-skippable:hover .jw-icon-inline,.jw-skin-epoch .jw-skip.jw-skippable:hover .jw-text{color:#ab0101}.jw-state-idle .jw-controls{background:none!important}
+#static_play_icon, #static_imp_text {
+    display: inline-block;
+    position: relative;
+    z-index: 1;
+    vertical-align: middle;
+}
+
+.jw-breakpoint-1 .jw-display .jw-icon, .jw-breakpoint-1 .jw-display .jw-svg-icon {
+    margin: 3px;
+}
+
+@media screen and (min-width: 1050px) {
+    .jw-breakpoint-4 .jw-display .jw-icon, .jw-breakpoint-5 .jw-display .jw-icon, .jw-breakpoint-6 .jw-display .jw-icon, .jw-breakpoint-7 .jw-display .jw-icon, .jw-breakpoint-4 .jw-display .jw-svg-icon, .jw-breakpoint-5 .jw-display .jw-svg-icon, .jw-breakpoint-6 .jw-display .jw-svg-icon, .jw-breakpoint-7 .jw-display .jw-svg-icon{
+        width: 70px;
+        height: 70px;
+        line-height: 88px;
+        margin: 7px;
+    }
+}
+
+#static_imp_text {
+    float: left;
+    padding-left: 30px;
+    bottom: 40px;
+}
+#static_play_icon {
+    float: right;
+    padding-right: 15px;
+    bottom: 50px;
+}
+#static_video_div {
+    width: 100%;
+    max-height: 100%;
+    position: relative;
+    z-index: 0;
+    overflow: hidden;
+    text-align: center;
+    border: none;
+    padding-top: 42px;
+    padding-bottom: 42px;
+    background: #000000;
+    opacity:0.8; 
+    border: 1.5px solid #ffffff;
+}
+.v_text {
+    color: white;
+    font-family: Helvetica;
+    font-size: 14px;
+}
+
+.jw-skin-epoch .jw-tooltip-time .jw-text {
+    color: #000;
+}

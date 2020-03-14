@@ -1,0 +1,987 @@
+var PREBID_TIMEOUT = 1000;
+
+var googletag = googletag || {};
+googletag.cmd = googletag.cmd || [];
+
+var ads = [];
+var infinity_ad_count = infinity_ad_count || 0;
+var recommend_ad_start = 0;
+var ntd_no_ads = ntd_no_ads || false;
+
+var ads_term_ids = [];
+if (typeof ntd_ads_term_ids === 'string') {
+	ads_term_ids = ntd_ads_term_ids.split(",");
+}
+
+(function() {
+	var gads = document.createElement('script');
+	gads.async = true;
+	gads.type = 'text/javascript';
+	var useSSL = 'https:' == document.location.protocol;
+	gads.src = (useSSL ? 'https:' : 'http:') +
+		'//www.googletagservices.com/tag/js/gpt.js';
+	var node = document.getElementsByTagName('script')[0];
+	node.parentNode.insertBefore(gads, node);
+})();
+
+function getRootDomain(hostname) {
+	if(hostname) {
+		var temp = hostname.split('.').reverse();
+		var root_domain = temp[2] + '.' + temp[1] + '.' + temp[0];
+		return root_domain;
+	} else {
+		return null;
+	}
+}
+
+
+googletag.cmd.push(function() {
+	if (ads_term_ids.length > 0) {
+		googletag.pubads().setTargeting("ENTD_category", ads_term_ids);
+	}
+
+	var hostname = window.location.hostname;
+	if(hostname) {
+		var domains = [];
+		domains.push(hostname);
+
+		var root_domain = getRootDomain(hostname);
+
+		domains.push(root_domain);
+		googletag.pubads().setTargeting("site", domains);
+	}
+});
+
+//Loading Amazon APS
+!function(a9,a,p,s,t,A,g){if(a[a9])return;function q(c,r){a[a9]._Q.push([c,r])}a[a9]={init:function(){q("i",arguments)},fetchBids:function(){q("f",arguments)},setDisplayBids:function(){},targetingKeys:function(){return[]},_Q:[]};A=p.createElement(s);A.async=!0;A.src=t;g=p.getElementsByTagName(s)[0];g.parentNode.insertBefore(A,g)}("apstag",window,document,"script","//c.amazon-adsystem.com/aax2/apstag.js");
+
+var aps_slots = [];
+apstag.init({
+	pubID: 'ae51d432-b517-4c68-9f8a-22444acccbb5',
+	adServer: 'googletag'
+});
+
+var pbjs = pbjs || {};
+pbjs.que = pbjs.que || [];
+pbjs.adUnitCount = pbjs.adUnitCount || 0;
+
+(function() {
+	if ( !pbjs.prebid_loaded && typeof pbjs.processQueue === "undefined" && !document.getElementById("prebid-js") ) {
+		pbjs.prebid_loaded = true;
+
+		var pbjsEl = document.createElement("script");
+		pbjsEl.id = "prebid-js";
+		pbjsEl.type = "text/javascript";
+		pbjsEl.async = true;
+		pbjsEl.src = "/assets/themes/m-ntd/js/ads/prebid.js";
+		var pbjsTargetEl = document.getElementsByTagName("head")[0];
+		pbjsTargetEl.insertBefore(pbjsEl, pbjsTargetEl.firstChild);
+	}
+})();
+
+googletag.cmd.push(function() {
+	googletag.pubads().enableSingleRequest();
+	googletag.pubads().collapseEmptyDivs();
+	googletag.pubads().disableInitialLoad();
+	googletag.enableServices();
+});
+
+var display_ads = function (slots) {
+	var pbjs_response = false;
+	$(slots).each(function(index, item) {
+		var default_size = item['default_size'] || '300x250';
+
+		if ($('#' + item['slot']).length > 0) {
+			var adUnits = [
+				{
+					code: item['ad_unit'],
+					mediaTypes: {
+						banner: {
+							sizes: item['sizes']
+						}
+					},
+					bids: ednBidders(default_size, item['ad_unit'], item['slot'])
+				}
+			];
+
+			var aps_slots = [{
+				slotID: item['slot'],
+				slotName: item['ad_unit'],
+				sizes: item['sizes']
+			}];
+
+			var ad_slot;
+
+			googletag.cmd.push(function () {
+				ad_slot = googletag.defineSlot(item['ad_unit'], item['sizes'], item['slot']).addService(googletag.pubads());
+			});
+
+			var initAdserver = function() {
+				if (pbjs_response) return;
+				pbjs_response = true;
+
+				if (item.lazyLoad) {
+					add_lazy_load_section('#' + item['slot'], function () {
+						googletag.cmd.push(function() {
+							pbjs.que.push(function() {
+								pbjs.setTargetingForGPTAsync([item['ad_unit']]);
+								googletag.pubads().refresh([ad_slot], {changeCorrelator: false});
+							});
+						});
+					});
+				} else {
+					googletag.cmd.push(function() {
+						pbjs.que.push(function() {
+							pbjs.setTargetingForGPTAsync([item['ad_unit']]);
+							googletag.pubads().refresh([ad_slot], {changeCorrelator: false});
+						});
+					});
+				}
+
+			};
+
+			if (typeof fetchHeaderBids !== 'function') {
+				pbjs.que.push(function () {
+					pbjs.addAdUnits(adUnits);
+					pbjs.adUnitCount = pbjs.adUnitCount + adUnits.length;
+
+					var sendBids = function () {
+						pbjs.requestBids({
+							timeout: PREBID_TIMEOUT,
+							adUnitCodes: [item['ad_unit']],
+							bidsBackHandler: function () {
+								initAdserver();
+							}
+						});
+
+						setTimeout(initAdserver, PREBID_TIMEOUT);
+					};
+
+
+					if (item.lazyLoad && pbjs.adUnitCount > 3) {
+						add_lazy_load_section('#' + item['slot'], function () {
+							sendBids();
+						}, 800);
+					} else {
+						sendBids();
+					}
+
+				});
+			} else {
+				googletag.cmd.push(function() {
+					pbjs.adUnitCount = pbjs.adUnitCount + adUnits.length;
+					if (item.lazyLoad && pbjs.adUnitCount > 3) {
+						add_lazy_load_section('#' + item['slot'], function () {
+							fetchHeaderBids(aps_slots, adUnits, [ad_slot], item.lazyLoad);
+						}, 800);
+					} else {
+						fetchHeaderBids(aps_slots, adUnits, [ad_slot], item.lazyLoad);
+					}
+				});
+			}
+		}
+	})
+};
+
+var fetchHeaderBids = function (apstagSlots, adUnits, ad_slots, lazyLoad) {
+
+	var TIMEOUT = 1000;
+
+	lazyLoad = lazyLoad || false;
+
+	//declare bidders
+	var bidders = ['a9', 'prebid'];
+
+	// create a requestManager to keep track of bidder state to determine when to send ad server
+	// request and what apstagSlots to request from the ad server
+	var requestManager = {
+		adserverRequestSent: false,
+		apstagSlots: apstagSlots,
+		adUnits: adUnits
+	};
+
+	//loop through bidder array and add the bidders to the request manager:
+	bidders.forEach(function(bidder) {
+		requestManager[bidder] = false;
+	});
+
+	// return true if all bidders have returned
+	var allBiddersBack = function() {
+		var allBiddersBack = bidders
+		// get the booleans from the object
+			.map(function(bidder) {
+				return requestManager[bidder];
+			})
+			// get rid of false values - indicates that the bidder has responded
+			.filter(Boolean)
+			// if length is equal to bidders, all bidders are back
+			.length === bidders.length;
+		return allBiddersBack;
+	};
+
+	// actually get ads from DFP
+	var sendAdserverRequest = function() {
+
+		// return early if request already sent
+		if (requestManager.adserverRequestSent === true) {
+			return;
+		}
+
+		// flip the boolean that keeps track of whether the adserver request was sent
+		requestManager.adserverRequestSent = true;
+
+		// make ad request to DFP
+		if (lazyLoad) {
+			add_lazy_load_section('#' + apstagSlots[0]['slotID'], function () {
+				googletag.cmd.push(function () {
+					apstag.setDisplayBids();
+					pbjs.setTargetingForGPTAsync([apstagSlots[0]['slotName']]);
+					googletag.pubads().refresh(ad_slots, {changeCorrelator: false});
+				});
+			});
+		} else {
+			googletag.cmd.push(function () {
+				apstag.setDisplayBids();
+				pbjs.setTargetingForGPTAsync([apstagSlots[0]['slotName']]);
+				googletag.pubads().refresh(ad_slots, {changeCorrelator: false});
+			});
+		}
+
+	};
+
+	// handler for header bidder responses
+	var headerBidderBack = function(bidder) {
+		// return early if request to adserver is already sent
+		if (requestManager.adserverRequestSent === true) {
+			return;
+		}
+		// set the bidder targeting and flip bidder back flag
+		if (bidder === 'a9') {
+			requestManager.a9 = true;
+		} else if (bidder === 'prebid') {
+			requestManager.prebid = true;
+		}
+
+		// if all bidders are back, send the request to the ad server
+		if (allBiddersBack()) {
+			sendAdserverRequest();
+		}
+	};
+
+	var requestBids = function() {
+		// request bids from prebid
+		pbjs.que.push(function() {
+			pbjs.addAdUnits(requestManager.adUnits);
+
+			pbjs.requestBids({
+				timeout: PREBID_TIMEOUT,
+				adUnitCodes: [requestManager.adUnits[0].code],
+				bidsBackHandler: function (bidResponses) {
+					headerBidderBack('prebid');
+				}
+			});
+		});
+
+		// fetch bids from APS
+		apstag.fetchBids({
+			slots: requestManager.apstagSlots
+		}, function(bids) {
+			headerBidderBack('a9');
+		});
+	};
+
+	requestBids();
+	// set timeout to send request to call sendAdserverRequest() after timeout
+	// if all bidders haven't returned before then
+	window.setTimeout(function() {
+		sendAdserverRequest();
+	}, TIMEOUT);
+};
+
+(function() {
+	var $ = jQuery;
+	if($('body.single-post').length > 0) {
+
+		if($('#main .right_col').length > 0) {
+			$('#main .right_col').prepend(get_ads_template('sidebar_ads_right_top_300_1', 'margin : 0 auto 10px auto; text-align: center'));
+			$('#main .right_col').append(get_ads_template('sidebar_ads_right_300_3', 'margin : 0 auto 30px auto; text-align: center'));
+		}
+
+		if($('body.single-post .post_content').length > 0) {
+			if ($('.top_ad').length > 0) {
+				$('.top_ad').append(get_ads_template('single_top_ads_970'));
+			}
+
+			var pre_artbody = 'body.single-post .post_content';
+			var art_p = pre_artbody + " > p, " + pre_artbody + " > figure";
+			var p_length = $(art_p).length;
+
+			if (p_length > 8) {
+				$(art_p).eq(5).before(get_ads_template('ad_article_inside_336_1', 'margin : 5px auto 30px; text-align: center'));
+			}
+
+			$(art_p).eq(p_length - 1).after(get_ads_template('ad_article_below_end_336', 'margin : 10px auto; text-align: center'));
+
+			insert_ads_div($('body.single-post'));
+			recommend_ad_start = infinity_ad_count;
+			insert_recommend_ads_div($('body.single-post'));
+
+			$('body.single-post .post_content').append('<div id="multi_lang_inread_1x1"></div>');
+
+		}
+
+		$('.left_col #featured_videos').append('<div id="sticky_left"></div>');
+		$('#sticky_left').append(get_ads_template('sidebar_ads_right_300_2', 'margin : 0 auto 10px auto; text-align: center'));
+		$(".social_email").before(get_ads_template('outbrain-below-article-thumbnails', 'margin : auto 22px 22px; text-align: center'));
+	} else if($('body.category').length > 0) {
+		$('body.category > header').after('<div id="category_top_ads_970" style="padding : 10px 0 0; text-align: center;"></div>');
+		if($('#main .side_ad_top').length > 0) {
+			$('#main .side_ad_top').prepend(get_ads_template('sidebar_ads_right_top_300_1', 'margin : 0 auto 10px auto; text-align: center'));
+			$("#main .right_col").append(get_ads_template('sidebar_ads_right_300_3', 'margin : 5px auto 0; text-align: center'));
+		}
+		$('footer').before(get_ads_template('category_bottom_ads_970', 'margin : 5px auto; text-align: center'));
+	} else if($('body.home').length > 0) {
+		$('body.home > header').after('<div id="ad_frontpage_top_728" style="padding : 10px 0 0; text-align: center;"></div>');
+		$(".top_part .right_side .facebook").after(get_ads_template('front_ads_right_300_01', 'margin : 0 auto; text-align: center'));
+		$("#main .top_row .right_side").html(get_ads_template('front_ads_right_300_02', 'margin : 40px auto 0; text-align: center'));
+		if(typeof(ntd_language_active) == "undefined" || 'ntd_korea' != ntd_language_active){
+			$("#main .bottom_row .right_side").html(get_ads_template('front_ads_right_300_03', 'margin : 40px auto 0; text-align: center'));
+		}
+		$('footer').before(get_ads_template('category_bottom_ads_970', 'margin : 5px auto; text-align: center; margin-bottom: 30px;'));
+	}
+
+	function get_ads_template(ad_id, style) {
+		var template = '<div style="' + style + '"><div style="display: block;text-align: center"> <div id="'+ ad_id + '"></div></div></div>';
+		return template;
+	}
+})();
+
+function insert_ads_div (html_content) {
+	var pre_artbody = '.post_content';
+	var art_p = pre_artbody + " > p:not(:empty), "
+		+ pre_artbody + " > h2, "
+		+ pre_artbody + " > figure";
+	var paragraphs = $(art_p, html_content);
+	var p_length = paragraphs.length;
+	var step = 6;
+	var start_paragraph = 2 * step;
+	var end_paragraph = p_length - 2;
+
+	for(var i = start_paragraph; i < end_paragraph; i = i + step) {
+		paragraphs.eq(i - 1).after('<div style="margin : 5px auto 30px; text-align: center"><div style="display: block;text-align: center"><div id="in_article_ads_' + infinity_ad_count +'"></div></div></div>');
+		infinity_ad_count++;
+	}
+	return html_content;
+}
+
+function insert_recommend_ads_div (html_content) {
+	var pre_artbody = '#recommended_load_next_page';
+	var art_p = pre_artbody + "> .one_post";
+	var paragraphs = $(art_p, html_content);
+	var p_length = paragraphs.length;
+	var step = 3;
+	var start_paragraph = step;
+	var end_paragraph = p_length - 1;
+
+	for(var i = start_paragraph; i < end_paragraph; i = i + step) {
+		paragraphs.eq(i - 1).after('<div style="padding: 20px 0; text-align: center" class="one_post"><div style="display: block;text-align: center"><div id="in_article_ads_' + infinity_ad_count +'"></div></div></div>');
+		infinity_ad_count++;
+	}
+	return html_content;
+}
+
+function display_infinite_ads(adcount_start, adcount_end){
+	for(var i = adcount_start; i < adcount_end; i++) {
+		var ad_unit = i < recommend_ad_start ? '/5965368/ntd_multi_lang_article_inside_336_2' : '/5965368/ntd_multi_lang_article_inside_336_3';
+		if ($('#in_article_ads_' + i).length > 0) {
+			slots = [
+				{
+					'slot': 'in_article_ads_' + i,
+					'ad_unit': ad_unit,
+					'sizes': [
+						[300,250], [336,280]
+					],
+					'default_size': '300x250',
+					'lazyLoad': true,
+				}
+			];
+			display_ads(slots);
+		}
+	}
+}
+
+pbjs.que.push(function() {
+	var customBannerPriceGranularity = {
+		"buckets": [
+			{ "precision": 2, "min": 0, "max": 5, "increment": 0.01 },
+			{ "precision": 2, "min": 5, "max": 10, "increment": 0.05 },
+			{ "precision": 2, "min": 10, "max": 20, "increment": 0.10 },
+			{ "precision": 2, "min": 20, "max": 30, "increment": 0.50 },
+			{ "precision": 2, "min": 30, "max": 40, "increment": 1.00 }
+		]
+	};
+
+	var customVideoPriceGranularity = {
+		"buckets": [
+			{
+				"precision": 2, //default is 2 if omitted - means 2.1234 rounded to 2 decimal places = 2.12
+				"min": 0,
+				"max": 40,
+				"increment": 0.50
+			}
+		]
+	};
+
+	if(!pbjs.initialized) {
+		pbjs.initialized = true;
+
+		pbjs.setConfig({
+			cache: {url: 'https://prebid.adnxs.com/pbc/v1/cache'},
+			bidderTimeout: PREBID_TIMEOUT,
+			userSync: {
+				iframeEnabled: true,
+				enabledBidders: ['pubmatic', 'districtmDMX', 'openx'],
+				syncDelay: 6000
+			},
+			/*s2sConfig: {
+				endpoint: 'https://prebid.adnxs.com/pbs/v1/openrtb2/auction',
+				syncEndpoint: 'https://prebid.adnxs.com/pbs/v1/cookie_sync',
+				accountId : 'da48d533-4e7c-4cf2-b5a4-647479e7c5ed',
+				enabled : true,
+				bidders : [
+					'appnexus'
+				],
+				timeout : 1000,
+				adapter : 'prebidServer'
+			},*/
+			'mediaTypePriceGranularity': {
+				'banner': customBannerPriceGranularity,
+				'video': customVideoPriceGranularity
+			}
+		});
+	}
+
+	var billboard_sizes = [
+		{
+			minWidth : 1000,  //if device screen width is greater than 1024, use these sizes
+			sizes : [[970,250], [970,90],[728,90]]
+		},
+		{
+			minWidth : 740,  //if device screen width is < 1024 && >= 768, use these sizes
+			sizes : [[728,90]]
+		},
+		{
+			minWidth : 460,  //if device screen width is < 768 && >= 480, use these sizes
+			sizes : [[320,100],[320,50],[300,100],[300,50]]
+		},
+		{
+			minWidth : 0,  //if device screen width is < 480 && > 0, use these sizes
+			sizes : [[300,100],[300,50]]
+		}
+	];
+});
+
+(function() {
+	var $ = jQuery;
+
+	var googletag_billboard;
+
+	googletag.cmd.push(function() {
+		googletag_billboard = googletag.sizeMapping().
+		addSize([1000, 0], [[970, 250],[970,90],[728,90]]).
+		addSize([740, 0], [[728,90]]).
+		addSize([460, 0], [[320,100],[320,50],[300,100],[300,50]]).
+		addSize([0, 0], [[300,100],[300,50]]).
+		build();
+	});
+
+	var slots = [];
+
+	if ($("#ad_frontpage_top_728").length > 0) {
+		slots = [
+			{
+				'slot': 'ad_frontpage_top_728',
+				'ad_unit': '/5965368/ntd_multi_lang_frontpage_header_728',
+				'sizes': [
+					[970,250], [970,90], [728,90]
+				],
+				'default_size': '728x90'
+			}
+		];
+
+		display_ads(slots);
+
+	}
+
+	if ($("#category_top_ads_970").length > 0) {
+		slots = [
+			{
+				'slot': 'category_top_ads_970',
+				'ad_unit': '/5965368/ntd_multi_lang_header_728x90',
+				'sizes': [
+					[970,250], [970,90], [728,90]
+				],
+				'default_size': '728x90'
+			}
+		];
+
+		display_ads(slots);
+
+	}
+
+	if ($("#category_bottom_ads_970").length > 0) {
+		slots = [
+			{
+				'slot': 'category_bottom_ads_970',
+				'ad_unit': '/5965368/ntd_multi_lang_header_728x90_2',
+				'sizes': [
+					[970,250], [970,90], [728,90]
+				],
+				'lazyLoad': true,
+				'default_size': '728x90'
+			}
+		];
+
+		display_ads(slots);
+
+	}
+
+	if ($("#single_top_ads_970").length > 0) {
+		slots = [
+			{
+				'slot': 'single_top_ads_970',
+				'ad_unit': '/5965368/ntd_multi_lang_article_header_728x90',
+				'sizes': [
+					[970,250], [970,90], [728,90]
+				],
+				'default_size': '728x90'
+			}
+		];
+
+		display_ads(slots);
+
+	}
+
+	if ($("#single_bottom_ads_970").length > 0) {
+		slots = [
+			{
+				'slot': 'single_bottom_ads_970',
+				'ad_unit': '/5965368/ntd_multi_lang_article_header_728x90_2',
+				'sizes': [
+					[970,250], [970,90], [728,90]
+				],
+				'lazyLoad': true,
+				'default_size': '728x90'
+			}
+		];
+
+		display_ads(slots);
+
+	}
+
+	if ($("#front_ads_right_300_01").length > 0) {
+		slots = [
+			{
+				'slot': 'front_ads_right_300_01',
+				'ad_unit': '/5965368/ntd_multi_lang_336x280-1',
+				'sizes': [
+					[300, 250]
+				]
+			}
+		];
+
+		display_ads(slots);
+
+	}
+
+	if ($("#front_ads_right_300_02").length > 0) {
+		slots = [
+			{
+				'slot': 'front_ads_right_300_02',
+				'ad_unit': '/5965368/ntd_multi_lang_336x280-2',
+				'sizes': [
+					[300, 600]
+				],
+				'lazyLoad': true,
+				'default_size': '300x600'
+			}
+		];
+
+		display_ads(slots);
+
+	}
+
+	if ($("#front_ads_right_300_03").length > 0) {
+		slots = [
+			{
+				'slot': 'front_ads_right_300_03',
+				'ad_unit': '/5965368/ntd_multi_lang_336x280-3',
+				'sizes': [
+					[300, 600]
+				],
+				'lazyLoad': true,
+				'default_size': '300x600'
+			}
+		];
+
+		display_ads(slots);
+
+	}
+
+	if ($("#sidebar_ads_right_top_300_1").length > 0) {
+		slots = [
+			{
+				'slot': 'sidebar_ads_right_top_300_1',
+				'ad_unit': '/5965368/ntd_multi_lang_336x280-4',
+				'sizes': [
+					[300, 250],
+					[300, 600]
+				],
+				'default_size': '300x250'
+			}
+		];
+
+		display_ads(slots);
+
+	}
+
+	if ($("#sidebar_ads_right_300_2").length > 0) {
+		slots = [
+			{
+				'slot': 'sidebar_ads_right_300_2',
+				'ad_unit':'/5965368/ntd_multi_lang_336x280-5',
+				'sizes': [
+					[300, 250]
+				],
+				'lazyLoad': true
+			}
+		];
+
+		display_ads(slots);
+
+	}
+
+	if ($("#sidebar_ads_right_300_3").length > 0) {
+		slots = [
+			{
+				'slot': 'sidebar_ads_right_300_3',
+				'ad_unit': '/5965368/ntd_multi_lang_336x280-6',
+				'sizes': [
+					[300, 250],
+					[300, 600]
+				],
+				'lazyLoad': true
+			}
+		];
+
+		display_ads(slots);
+
+	}
+
+	//article page
+	display_infinite_ads(0, recommend_ad_start);
+	display_infinite_ads(recommend_ad_start, infinity_ad_count);
+
+	if ($("#ad_article_inside_336_1").length > 0) {
+		slots = [
+			{
+				'slot': 'ad_article_inside_336_1',
+				'ad_unit': '/5965368/ntd_multi_lang_article_inside_336_1',
+				'sizes': [
+					[300, 250],
+					[336, 280]
+				],
+				'lazyLoad': true
+			}
+		];
+
+		display_ads(slots);
+
+	}
+
+	if ($("#ad_article_below_end_336").length > 0) {
+		slots = [
+			{
+				'slot': 'ad_article_below_end_336',
+				'ad_unit': '/5965368/ntd_multi_lang_article_below_end_336',
+				'sizes': [
+					[300, 250]
+				],
+				'lazyLoad': true
+			}
+		];
+
+		display_ads(slots);
+
+	}
+
+	if ($("#multi_lang_inread_1x1").length > 0) {
+		googletag.cmd.push(function () {
+			multi_lang_inread_1x1 = googletag.defineSlot('/5965368/multi_lang_inread_1x1', [1, 1], 'multi_lang_inread_1x1').addService(googletag.pubads());
+			googletag.display('multi_lang_inread_1x1');
+			googletag.pubads().refresh([multi_lang_inread_1x1], {changeCorrelator: false});
+		});
+	}
+
+	/*not truth article*/
+	if ($("#outbrain-below-article-thumbnails").length > 0) {
+		add_lazy_load_section('#outbrain-below-article-thumbnails', function() {
+			$("#outbrain-below-article-thumbnails").after('<style>#outbrain-below-article-thumbnails{display: block; padding: 0 15px; text-align: center;}.OUTBRAIN .TF_6.ob-widget.ob-ultra-strip-layout .ob-widget-header{font-family: vollkorn;}.OUTBRAIN .TF_6.ob-widget.ob-ultra-strip-layout .ob-rec-text{font-family: vollkorn;}.OUTBRAIN .ob-rec-source{font-family: arial;}</style><div class="OUTBRAIN" data-src=' + window.location.href + ' data-widget-id="TF_6" data-ob-template="NTDTV"></div><script type="text/javascript" async="async" src="//widgets.outbrain.com/outbrain.js"></script>');
+		});
+	}
+
+})();
+
+//header bidding settings start
+function ednBidders(size, adunit, dom_id) {
+	/*var pulsepoint = {
+		'300x250': {
+			cf: '300x250',
+			cp: '558424',
+			ct: '458269'
+		}
+	};*/
+
+	var appnexus = {
+			'300x250': 11752308,
+			'300x600': 11752312,
+			'728x90': 11752313,
+			'970x250': 11752314,
+			'970x90': 11752315
+	};
+
+	var aol = {
+			'300x250': '4514956'
+	};
+
+	var openx = {
+			'300x50': '538813631',
+			'300x100': '538813632',
+			'300x250': '538813633',
+			'160x600': '538813634',
+			'300x600': '538813635',
+			'320x50': '538813636',
+			'320x100': '538813637',
+			'336x280': '538813638',
+			'728x90': '538813639',
+			'970x90': '538813640',
+			'970x250': '538813641'
+	};
+
+	var criteo = {
+			'300x250': '776737',
+			'160x600': '781029',
+			'300x600': '781030',
+			'336x280': '781031',
+			'728x90': '781032',
+			'970x90': '781033',
+			'970x250': '781035'
+	};
+
+	var hostname = window.location.hostname;
+	var root_domain = getRootDomain(hostname);
+
+	var pubmatic = [];
+	pubmatic['ntd.tv'] = {
+			'728x90': '1358170@728x90',
+			'970x90': '1358172@970x90',
+			'970x250': '1358171@970x250',
+			'300x250': '1358164@300x250',
+			'336x280': '1358167@336x280'
+	};
+	pubmatic['kr.theepochtimes.com'] = {
+			'728x90': '1358160@728x90',
+			'970x250': '1358161@970x250',
+			'970x90': '1358162@970x90',
+			'300x600': '1358163@300x600',
+			'300x250': '1358154@300x250',
+			'336x280': '1358157@336x280'
+	};
+	pubmatic['fr.theepochtimes.com'] = {
+			'728x90': '1619450@728x90',
+			'970x90': '1619446@970x90',
+			'970x250': '1619445@970x250',
+			'300x600': '1619447@300x600',
+			'300x250': '1619449@300x250',
+			'336x280': '1619448@336x280'
+	};
+	pubmatic['es.theepochtimes.com'] = {
+			'728x90': '1619364@728x90',
+			'970x90': '1619368@970x90',
+			'970x250': '1619369@970x250',
+			'300x600': '1619367@300x600',
+			'300x250': '1619365@300x250',
+			'336x280': '1619366@336x280'
+	};
+
+	if (!(root_domain in pubmatic)) {
+		root_domain = 'ntd.tv';
+	}
+
+	var bidders = [{
+			bidder: 'districtmDMX',
+			params: {
+				dmxid: 117689,
+				memberid:  100086
+			}
+		}, {
+		bidder: 'openx',
+		params: {
+			unit: openx[size],
+			delDomain: 'epoch-times-d.openx.net'
+		}
+	}, {
+		bidder: 'appnexus',
+		params: {
+			placementId: appnexus[size]
+		}
+	}, {
+		bidder: 'conversant',
+		params: {
+			site_id: '112252'
+		}
+	}, {
+		bidder: 'sonobi',
+		params: {
+			dom_id: dom_id,
+			ad_unit: adunit
+		}
+	}, {
+		bidder: 'aol',
+		params: {
+			placement: aol[size],
+			network: '10564.1'
+		}
+	}, {
+		bidder: 'pubmatic',
+		params: {
+			publisherId: '156822',
+			adSlot: pubmatic[root_domain][size]
+		}
+	}, /*, {
+		bidder: 'criteo',
+		params: {
+			zoneId: criteo[size]
+		}
+	}*/];
+	return bidders;
+}
+
+(function() {
+	var cc_client_id = 3165;
+	// Callback method that will be invoked and passed the JSON payload from the
+	// JSONP extraction call.
+
+	var cc_extr_callback = 'ccauds';
+
+	// Optional port number.  If calls are being made to the Lotame servers on
+	// a custom port, uncomment and set.
+
+	// var portNumber = '8080';
+	/**
+	 * Will generate the proper audience extraction URL to be used in a
+	 * JSONP call on the client page.
+	 */
+	var get_cc_extr_url = function() {
+		var domain = '.crwdcntrl.net';
+
+		// Look for a domain cookie first
+
+		var noDomainCookie = true;
+		var start = document.cookie.indexOf('_cc_domain');
+		if (start > -1) {
+			var valStartDc = document.cookie.indexOf('=', start);
+			if (valStartDc > 0) {
+				noDomainCookie = false;
+				valStartDc++;
+				var valEndDc = document.cookie.indexOf(';', valStartDc);
+				valEndDc = valEndDc > 0 ? valEndDc : document.cookie.length;
+				domain = document.cookie.slice(valStartDc, valEndDc);
+			}
+		}
+
+		// If there was no domain cookie then check to see if there is an id cookie.
+
+		var idCookie = false;
+		if (noDomainCookie) {
+			var id;
+			start = document.cookie.indexOf('_cc_id');
+			if (start > -1) {
+				var valStartId = document.cookie.indexOf('=', start);
+				if (valStartId > 0) {
+					idCookie = true;
+					valStartId++;
+					var valEndId = document.cookie.indexOf(';', valStartId);
+					valEndId = valEndId > 0 ? valEndId : document.cookie.length;
+					id = document.cookie.slice(valStartId, valEndId);
+				}
+			}
+		}
+		var cc_url = '//ad' + domain;
+		if (typeof(portNumber) != 'undefined' && portNumber != null) {
+			cc_url = cc_url + ':' + portNumber;
+		}
+		cc_url = cc_url + '/5/c=' + cc_client_id + '/pe=y/callback=' + cc_extr_callback;
+		if (idCookie) {
+			cc_url = cc_url + '/pid=' + id;
+		}
+		return cc_url;
+	};
+
+
+	ccauds = function(data) {
+		var audiencesString = JSON.stringify(data, undefined, 2);
+
+		if (typeof data.Profile.Audiences.Audience !== undefined) {
+			var audiencesString = '';
+			$.each(data.Profile.Audiences.Audience, function(key, value) {
+				try {
+					if (value.abbr !== 'all') {
+						audiencesString = audiencesString ? audiencesString + ',' : audiencesString;
+						audiencesString = audiencesString + value.abbr;
+					}
+				} catch (ex) {}
+			});
+
+			if (audiencesString) {
+				var audiences = audiencesString.split(",");
+			}
+
+			if (typeof audiences != 'undefined' && audiences.length > 0) {
+				googletag.cmd.push(function() {
+					googletag.pubads().setTargeting("Lotame", audiences);
+				});
+			}
+		}
+	};
+
+	var getAudiences = function() {
+		// get the correct URL to call based on the existing cookies
+		var url = get_cc_extr_url();
+
+		var tempScriptTag = document.createElement('script');
+		tempScriptTag.type = 'text/javascript';
+		tempScriptTag.async = true;
+		tempScriptTag.src = url;
+		document.body.appendChild(tempScriptTag);
+	};
+
+	getAudiences();
+
+	if (document.location.hostname === 'www.ntd.tv') {
+		(function () {
+			var advancedTag = document.createElement('script');
+			advancedTag.async = true;
+			advancedTag.type = 'text/javascript';
+			var useSSL = 'https:' == document.location.protocol;
+			advancedTag.src = (useSSL ? 'https:' : 'http:') +
+				'//tags.crwdcntrl.net/c/3391/cc.js?ns=_cc3391';
+			advancedTag.id = 'LOTCC_3391';
+			advancedTag.onload = function() {
+				_cc3391.bcpf();
+			};
+			var node = document.getElementsByTagName("head")[0];
+			node.insertBefore(advancedTag, node.firstChild);
+		})();
+	}
+})();
